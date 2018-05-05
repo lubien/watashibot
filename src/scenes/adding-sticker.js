@@ -11,9 +11,7 @@ function askTags (ctx) {
 }
 
 // Step 2
-const confirmTags = new Composer()
-
-confirmTags.on('message', ctx => {
+function displayTags (ctx) {
   const { text } = ctx.message
 
   if (!text) return ctx.scene.reenter()
@@ -28,25 +26,36 @@ confirmTags.on('message', ctx => {
 
   ctx.reply(`Confirm tags: ${tags.join(', ')}`, Markup.inlineKeyboard([
     Markup.callbackButton('⬅️ Redo', 'redo'),
-    Markup.callbackButton('➡️ Next', 'next')
+    Markup.callbackButton('➡️ Confirm', 'confirm')
   ]).extra())
-})
-confirmTags.action('next', ctx => ctx.wizard.next() )
-confirmTags.action('redo', ctx => ctx.scene.reenter() )
-confirmTags.use(ctx => ctx.replyWithMarkdown('Press any button'))
+
+  return ctx.wizard.next()
+}
 
 // Step 3
-async function addSticker (ctx) {
+const confirm = new Composer()
+
+confirm.action('redo', ctx => {
+  ctx.deleteMessage()
+  return ctx.scene.reenter()
+})
+
+confirm.action('confirm', async ctx => {
   const { sticker, tags } = ctx.scene.state
+
+  ctx.editMessageText('⏲ Adding sticker...')
   const inserted = await insertNewSticker(ctx.from.id, sticker, tags)
-  ctx.reply('Sticker added')
+  ctx.editMessageText('✅ Sticker added')
+  
   return ctx.scene.leave()
-}
+})
+
+confirm.use(ctx => ctx.replyWithMarkdown('Press a button'))
 
 const addingStickerScene = new WizardScene('adding-sticker',
   askTags,
-  confirmTags,
-  addSticker
+  displayTags,
+  confirm
 )
 
 function insertNewSticker(userId, sticker, tags) {
