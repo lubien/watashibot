@@ -1,0 +1,12 @@
+{
+  "main": "index.js",
+  "scripts": {
+    "dev": "backpack"
+  },
+  "dependencies": {
+    "backpack-core": "^0.7.0",
+    "dotenv": "^5.0.1",
+    "mongoose": "^5.0.17",
+    "telegraf": "^3.20.0"
+  }
+}
